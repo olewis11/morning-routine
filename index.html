@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Morning Routine Drag Race</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    :root {
+      --asphalt: #2c3e50;
+      --bg-color: #ecf0f1;
+      --median-bg: #34495e;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-color);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    header {
+      text-align: center;
+      color: white;
+      padding: 15px;
+      background: #1a252f;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      z-index: 100;
+    }
+
+    h1 { 
+      margin: 0; 
+      font-size: 2rem; 
+      text-transform: uppercase; 
+      letter-spacing: 2px;
+    }
+    
+    .instructions { 
+      margin: 5px 0 0 0; 
+      font-size: 1rem; 
+      color: #bdc3c7;
+    }
+
+    .scroll-wrapper {
+      flex: 1;
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .track-container {
+      flex: 1;
+      display: grid;
+      /* 5 Rows: Finn Lane, Top Rail, Tasks (Median), Bottom Rail, Bowen Lane */
+      grid-template-rows: 1fr 15px 1fr 15px 1fr; 
+      min-width: 1000px; /* Forces horizontal scroll on small portrait screens */
+      position: relative;
+    }
+
+    .lane {
+      position: relative;
+      background: var(--asphalt);
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      border-top: 3px solid #111;
+      border-bottom: 3px solid #111;
+    }
+
+    /* Dashed lane lines */
+    .lane::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: repeating-linear-gradient(90deg, #fff, #fff 40px, transparent 40px, transparent 80px);
+      transform: translateY(-50%);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .lane-label {
+      position: absolute;
+      left: 15px;
+      top: 15px;
+      color: rgba(255,255,255,0.4);
+      font-weight: 700;
+      font-size: 2rem;
+      pointer-events: none;
+      letter-spacing: 3px;
+    }
+
+    .guardrail {
+      background: repeating-linear-gradient(
+        45deg,
+        #c0392b,
+        #c0392b 20px,
+        #ecf0f1 20px,
+        #ecf0f1 40px
+      );
+      box-shadow: inset 0 3px 5px rgba(0,0,0,0.5), 0 5px 10px rgba(0,0,0,0.5);
+      z-index: 10;
+    }
+
+    .median {
+      background: var(--median-bg);
+      display: grid;
+      grid-template-columns: repeat(11, 1fr); /* Start + 10 Tasks */
+      align-items: center;
+      color: white;
+    }
+
+    .task-box {
+      text-align: center;
+      padding: 5px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      border-right: 2px dashed rgba(255,255,255,0.2);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      line-height: 1.2;
+    }
+    .task-box:last-child { border-right: none; }
+
+    /* Thematic Start and Finish Lines */
+    .start-box {
+      background: #27ae60;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);
+    }
+
+    .finish-box {
+      background: repeating-conic-gradient(#000 0% 25%, #fff 0% 25% 50%) 50% / 20px 20px;
+      color: #fff;
+      text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+    }
+
+    .car {
+      position: absolute;
+      font-size: 4rem;
+      top: 50%;
+      /* Centers the car perfectly over its current position */
+      transform: translate(-50%, -50%);
+      transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      user-select: none;
+      filter: drop-shadow(4px 4px 5px rgba(0,0,0,0.5));
+      z-index: 20;
+    }
+
+    /* Reset Button */
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
+    }
+
+    .reset-btn {
+      background: #f39c12;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: bold;
+      border-radius: 25px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      font-size: 1rem;
+    }
+    .reset-btn:hover { background: #e67e22; }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Morning Drag Race</h1>
+    <p class="instructions">Tap your lane or your car to advance to the next task!</p>
+  </header>
+
+  <div class="scroll-wrapper">
+    <div class="track-container">
+      
+      <div class="lane" id="finn-lane">
+        <div class="lane-label">FINN</div>
+        <div class="car" id="finn-car">🚙</div>
+      </div>
+      
+      <div class="guardrail"></div>
+      
+      <div class="median">
+        <div class="task-box start-box">START</div>
+        <div class="task-box">1<br>Get Dressed</div>
+        <div class="task-box">2<br>Brush Hair</div>
+        <div class="task-box">3<br>Meds / Vitamins</div>
+        <div class="task-box">4<br>Get Breakfast</div>
+        <div class="task-box">5<br>Eat</div>
+        <div class="task-box">6<br>Dishes in Sink</div>
+        <div class="task-box">7<br>Brush Teeth</div>
+        <div class="task-box">8<br>Sunscreen</div>
+        <div class="task-box">9<br>Shoes On</div>
+        <div class="task-box finish-box">10<br>Pack Bag</div>
+      </div>
+      
+      <div class="guardrail"></div>
+      
+      <div class="lane" id="bowen-lane">
+        <div class="lane-label">BOWEN</div>
+        <div class="car" id="bowen-car">🚗</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="reset-btn" id="reset-btn">Reset Race</button>
+  </div>
+
+  <script>
+    let finnStep = 0;
+    let bowenStep = 0;
+    const totalSteps = 10;
+    let raceFinished = false;
+    let audioCtx = null;
+
+    const finnCar = document.getElementById('finn-car');
+    const bowenCar = document.getElementById('bowen-car');
+    const finnLane = document.getElementById('finn-lane');
+    const bowenLane = document.getElementById('bowen-lane');
+    const resetBtn = document.getElementById('reset-btn');
+
+    // Function to calculate and update the car's horizontal position
+    function updateCarPosition(carElement, step) {
+      // 11 total columns (Start + 10 Tasks)
+      const colWidth = 100 / 11; 
+      // Move to the exact center of the current step's column
+      carElement.style.left = `calc(${colWidth * step}% + ${colWidth / 2}%)`;
+    }
+
+    // Set initial starting line positions
+    updateCarPosition(finnCar, finnStep);
+    updateCarPosition(bowenCar, bowenStep);
+
+    // Audio Tick for moving forward
+    function playTickSound() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      
+      oscillator.type = 'triangle';
+      oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
+      
+      gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.05);
+    }
+
+    function checkWinner(name, step) {
+      if (step === totalSteps && !raceFinished) {
+        raceFinished = true;
+        
+        // Blast Confetti
+        confetti({
+          particleCount: 200,
+          spread: 120,
+          origin: { y: 0.5 },
+          zIndex: 1000
+        });
+
+        // Announce Winner
+        window.speechSynthesis.cancel();
+        const announcement = new SpeechSynthesisUtterance(`And the winner is... ${name}!`);
+        announcement.pitch = 1.1;
+        announcement.rate = 1.0;
+        window.speechSynthesis.speak(announcement);
+      }
+    }
+
+    // Lane Click Handlers
+    finnLane.addEventListener('click', () => {
+      if (finnStep < totalSteps && !raceFinished) {
+        playTickSound();
+        finnStep++;
+        updateCarPosition(finnCar, finnStep);
+        checkWinner('Finn', finnStep);
+      }
+    });
+
+    bowenLane.addEventListener('click', () => {
+      if (bowenStep < totalSteps && !raceFinished) {
+        playTickSound();
+        bowenStep++;
+        updateCarPosition(bowenCar, bowenStep);
+        checkWinner('Bowen', bowenStep);
+      }
+    });
+
+    // Reset the race for the next morning
+    resetBtn.addEventListener('click', () => {
+      finnStep = 0;
+      bowenStep = 0;
+      raceFinished = false;
+      updateCarPosition(finnCar, finnStep);
+      updateCarPosition(bowenCar, bowenStep);
+      window.speechSynthesis.cancel(); // Stop announcer if resetting early
+    });
+  </script>
+</body>
+</html>
