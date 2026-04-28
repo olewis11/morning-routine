@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Morning Routine Drag Race</title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     :root {
@@ -27,27 +27,80 @@
     header {
       text-align: center;
       color: white;
-      padding: 15px;
+      padding: 10px;
       background: #1a252f;
       box-shadow: 0 4px 6px rgba(0,0,0,0.3);
       z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      flex: 0 0 auto;
     }
 
     h1 { 
       margin: 0; 
-      font-size: 2rem; 
+      font-size: 1.5rem; 
       text-transform: uppercase; 
       letter-spacing: 2px;
     }
-    
-    .instructions { 
-      margin: 5px 0 0 0; 
-      font-size: 1rem; 
-      color: #bdc3c7;
+
+    /* Start Button Overlay */
+    .start-btn {
+      background: #27ae60;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: 1rem;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #1e8449, 0 8px 15px rgba(0,0,0,0.4);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .start-btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 0 0 #1e8449, 0 4px 5px rgba(0,0,0,0.4);
+    }
+
+    /* Big Countdown Overlay */
+    #countdown-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 500;
+    }
+    #countdown-text {
+      font-size: 15rem;
+      font-weight: 900;
+      color: #f1c40f;
+      text-shadow: 0 10px 20px rgba(0,0,0,0.5);
+      animation: pop 1s infinite;
+    }
+    @keyframes pop {
+      0% { transform: scale(0.5); opacity: 0; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 0; }
+    }
+
+    /* Inline Winner Animation */
+    @keyframes bounce {
+      0%, 100% { transform: translate(-50%, -50%) scaleX(-1) translateY(0); }
+      50% { transform: translate(-50%, -50%) scaleX(-1) translateY(-20px); }
+    }
+    .is-winner {
+      animation: bounce 0.6s infinite !important;
+      z-index: 30 !important;
     }
 
     .scroll-wrapper {
-      flex: 1;
+      flex: 1; 
       width: 100%;
       overflow-x: auto;
       overflow-y: hidden;
@@ -58,9 +111,8 @@
     .track-container {
       flex: 1;
       display: grid;
-      /* 5 Rows: Finn Lane, Top Rail, Tasks (Median), Bottom Rail, Bowen Lane */
       grid-template-rows: 1fr 15px 1fr 15px 1fr; 
-      min-width: 1000px; /* Forces horizontal scroll on small portrait screens */
+      min-width: 1100px; 
       position: relative;
     }
 
@@ -72,9 +124,9 @@
       cursor: pointer;
       border-top: 3px solid #111;
       border-bottom: 3px solid #111;
+      overflow: hidden;
     }
 
-    /* Dashed lane lines */
     .lane::after {
       content: '';
       position: absolute;
@@ -88,15 +140,67 @@
       pointer-events: none;
     }
 
+    /* General text styling before justification applied */
     .lane-label {
       position: absolute;
       left: 15px;
-      top: 15px;
       color: rgba(255,255,255,0.4);
       font-weight: 700;
-      font-size: 2rem;
+      font-size: 1.5rem;
       pointer-events: none;
       letter-spacing: 3px;
+      z-index: 10;
+    }
+
+    .lane-timer {
+      position: absolute;
+      right: 15px;
+      color: #f1c40f;
+      font-size: 1.5rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 1px;
+      z-index: 10;
+      pointer-events: none;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .split-time {
+      position: absolute;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.6);
+      font-size: 1rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* Specific Justification Rules for Finn (Top) and Bowen (Bottom) */
+    #finn-lane .lane-label, 
+    #finn-lane .lane-timer, 
+    #finn-lane .split-time {
+      top: 10px;
+    }
+
+    #bowen-lane .lane-label, 
+    #bowen-lane .lane-timer, 
+    #bowen-lane .split-time {
+      bottom: 10px;
+    }
+
+    .tire-track {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 12px;
+      background: repeating-linear-gradient(90deg, #111, #111 8px, transparent 8px, transparent 16px);
+      z-index: 15;
+      transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      width: 0;
+      opacity: 0.6;
+      pointer-events: none;
     }
 
     .guardrail {
@@ -114,7 +218,7 @@
     .median {
       background: var(--median-bg);
       display: grid;
-      grid-template-columns: repeat(11, 1fr); /* Start + 10 Tasks */
+      grid-template-columns: repeat(12, 1fr); 
       align-items: center;
       color: white;
     }
@@ -122,7 +226,7 @@
     .task-box {
       text-align: center;
       padding: 5px;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       font-weight: 700;
       border-right: 2px dashed rgba(255,255,255,0.2);
       height: 100%;
@@ -132,8 +236,12 @@
       line-height: 1.2;
     }
     .task-box:last-child { border-right: none; }
+    
+    .task-emoji {
+      font-size: 2rem; 
+      margin: 4px 0;
+    }
 
-    /* Thematic Start and Finish Lines */
     .start-box {
       background: #27ae60;
       color: white;
@@ -142,47 +250,80 @@
       box-shadow: inset -5px 0 15px rgba(0,0,0,0.2);
     }
 
+    /* Pure Checkered Square (Bulletproof Method) */
     .finish-box {
-      background: repeating-conic-gradient(#000 0% 25%, #fff 0% 25% 50%) 50% / 20px 20px;
-      color: #fff;
-      text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
-      font-size: 1.1rem;
-      text-transform: uppercase;
+      background-color: #fff;
+      background-image: 
+        linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%, #111),
+        linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%, #111);
+      background-size: 20px 20px;
+      background-position: 0 0, 10px 10px;
+      border-right: none;
     }
 
     .car {
       position: absolute;
-      font-size: 4rem;
-      top: 50%;
-      /* Centers the car perfectly over its current position */
-      transform: translate(-50%, -50%);
+      font-size: 5.5rem; 
+      /* Shifts removed from here to allow specific top-positioning below */
+      transform: translate(-50%, -50%) scaleX(-1);
       transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1);
       user-select: none;
-      filter: drop-shadow(4px 4px 5px rgba(0,0,0,0.5));
       z-index: 20;
+      white-space: nowrap; 
     }
 
-    /* Reset Button */
+    /* Shift cars away from text */
+    #finn-car {
+      top: 65%;
+    }
+    #bowen-car {
+      top: 35%;
+    }
+
+    /* Isolate the vehicle from the trophy for shadow and color filtering */
+    .vehicle {
+      display: inline-block;
+      filter: drop-shadow(-4px 4px 5px rgba(0,0,0,0.5));
+    }
+
+    /* Paint Bowen's vehicle blue WITHOUT painting the trophy */
+    #bowen-car .vehicle {
+      filter: drop-shadow(-4px 4px 5px rgba(0,0,0,0.5)) hue-rotate(220deg);
+    }
+
+    /* Grandstand Area */
+    .grandstand {
+      flex: 0 0 50vh;
+      width: 100%;
+      background-color: #34495e;
+      background-image: url('grandstand.jpg'); 
+      background-size: cover;
+      background-position: center bottom;
+      border-top: 5px solid #222;
+      box-shadow: inset 0 15px 20px rgba(0,0,0,0.4);
+    }
+
+    /* Controls Bottom Right */
     .controls {
       position: absolute;
-      bottom: 20px;
-      right: 20px;
+      bottom: 15px;
+      right: 15px;
       z-index: 100;
     }
 
     .reset-btn {
-      background: #f39c12;
+      background: #e74c3c;
       color: white;
       border: none;
-      padding: 10px 20px;
+      padding: 8px 15px;
       font-family: 'Outfit', sans-serif;
       font-weight: bold;
       border-radius: 25px;
       cursor: pointer;
       box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-      font-size: 1rem;
+      font-size: 0.9rem;
     }
-    .reset-btn:hover { background: #e67e22; }
+    .reset-btn:hover { background: #c0392b; }
 
   </style>
 </head>
@@ -190,144 +331,280 @@
 
   <header>
     <h1>Morning Drag Race</h1>
-    <p class="instructions">Tap your lane or your car to advance to the next task!</p>
+    <button class="start-btn" id="start-btn">Start Engines!</button>
   </header>
+
+  <div id="countdown-overlay">
+    <div id="countdown-text">3</div>
+  </div>
 
   <div class="scroll-wrapper">
     <div class="track-container">
-      
       <div class="lane" id="finn-lane">
         <div class="lane-label">FINN</div>
-        <div class="car" id="finn-car">🚙</div>
+        <div class="lane-timer" id="finn-timer">0.0s</div>
+        <div class="tire-track" id="finn-track"></div>
+        <div class="car" id="finn-car"><span class="vehicle">🏎️</span></div>
       </div>
       
       <div class="guardrail"></div>
       
       <div class="median">
         <div class="task-box start-box">START</div>
-        <div class="task-box">1<br>Get Dressed</div>
-        <div class="task-box">2<br>Brush Hair</div>
-        <div class="task-box">3<br>Meds / Vitamins</div>
-        <div class="task-box">4<br>Get Breakfast</div>
-        <div class="task-box">5<br>Eat</div>
-        <div class="task-box">6<br>Dishes in Sink</div>
-        <div class="task-box">7<br>Brush Teeth</div>
-        <div class="task-box">8<br>Sunscreen</div>
-        <div class="task-box">9<br>Shoes On</div>
-        <div class="task-box finish-box">10<br>Pack Bag</div>
+        <div class="task-box">1<div class="task-emoji">👕</div>Get Dressed</div>
+        <div class="task-box">2<div class="task-emoji">🪮</div>Brush Hair</div>
+        <div class="task-box">3<div class="task-emoji">💊</div>Meds / Vitamins</div>
+        <div class="task-box">4<div class="task-emoji">🥣</div>Get Breakfast</div>
+        <div class="task-box">5<div class="task-emoji">🥞</div>Eat</div>
+        <div class="task-box">6<div class="task-emoji">🍽️</div>Dishes in Sink</div>
+        <div class="task-box">7<div class="task-emoji">🪥</div>Brush Teeth</div>
+        <div class="task-box">8<div class="task-emoji">🧴</div>Sunscreen</div>
+        <div class="task-box">9<div class="task-emoji">👟</div>Shoes On</div>
+        <div class="task-box">10<div class="task-emoji">🎒</div>Pack Bag</div>
+        <div class="task-box finish-box"></div>
       </div>
       
       <div class="guardrail"></div>
       
       <div class="lane" id="bowen-lane">
         <div class="lane-label">BOWEN</div>
-        <div class="car" id="bowen-car">🚗</div>
+        <div class="lane-timer" id="bowen-timer">0.0s</div>
+        <div class="tire-track" id="bowen-track"></div>
+        <div class="car" id="bowen-car"><span class="vehicle">🏎️</span></div>
       </div>
-
     </div>
   </div>
 
+  <div class="grandstand"></div>
+
   <div class="controls">
-    <button class="reset-btn" id="reset-btn">Reset Race</button>
+    <button class="reset-btn" id="reset-btn">Reset Board</button>
   </div>
 
   <script>
     let finnStep = 0;
     let bowenStep = 0;
-    const totalSteps = 10;
-    let raceFinished = false;
+    const totalSteps = 11; 
+    
+    let firstPlaceAnnounced = false; 
+    let isRacing = false;
     let audioCtx = null;
+    
+    // Timer Variables
+    let raceStartTime = 0;
+    let timerInterval = null;
+    let finnFinished = false;
+    let bowenFinished = false;
 
     const finnCar = document.getElementById('finn-car');
     const bowenCar = document.getElementById('bowen-car');
+    const finnTrack = document.getElementById('finn-track');
+    const bowenTrack = document.getElementById('bowen-track');
     const finnLane = document.getElementById('finn-lane');
     const bowenLane = document.getElementById('bowen-lane');
+    const finnTimerEl = document.getElementById('finn-timer');
+    const bowenTimerEl = document.getElementById('bowen-timer');
+    
+    const startBtn = document.getElementById('start-btn');
     const resetBtn = document.getElementById('reset-btn');
+    const countdownOverlay = document.getElementById('countdown-overlay');
+    const countdownText = document.getElementById('countdown-text');
 
-    // Function to calculate and update the car's horizontal position
-    function updateCarPosition(carElement, step) {
-      // 11 total columns (Start + 10 Tasks)
-      const colWidth = 100 / 11; 
-      // Move to the exact center of the current step's column
-      carElement.style.left = `calc(${colWidth * step}% + ${colWidth / 2}%)`;
+    // Init Cars and Tracks
+    function updateCarPosition(carElement, trackElement, step) {
+      const colWidth = 100 / 12; 
+      const targetPosition = (colWidth * step) + (colWidth / 2);
+      carElement.style.left = `calc(${targetPosition}%)`;
+      
+      // Ensure tire tracks are completely hidden before moving
+      if (step === 0) {
+        trackElement.style.width = `0`;
+      } else {
+        trackElement.style.width = `calc(${targetPosition}%)`;
+      }
     }
+    updateCarPosition(finnCar, finnTrack, finnStep);
+    updateCarPosition(bowenCar, bowenTrack, bowenStep);
 
-    // Set initial starting line positions
-    updateCarPosition(finnCar, finnStep);
-    updateCarPosition(bowenCar, bowenStep);
-
-    // Audio Tick for moving forward
-    function playTickSound() {
+    // Audio Engine
+    function initAudio() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
       if (audioCtx.state === 'suspended') audioCtx.resume();
-      
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      
-      oscillator.type = 'triangle';
-      oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
-      
-      gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.05);
     }
 
-    function checkWinner(name, step) {
-      if (step === totalSteps && !raceFinished) {
-        raceFinished = true;
-        
-        // Blast Confetti
-        confetti({
-          particleCount: 200,
-          spread: 120,
-          origin: { y: 0.5 },
-          zIndex: 1000
-        });
+    function playTone(freq, type, duration, vol) {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
 
-        // Announce Winner
-        window.speechSynthesis.cancel();
-        const announcement = new SpeechSynthesisUtterance(`And the winner is... ${name}!`);
-        announcement.pitch = 1.1;
-        announcement.rate = 1.0;
-        window.speechSynthesis.speak(announcement);
+    function playTick() { playTone(800, 'triangle', 0.05, 0.3); }
+    function playBeep() { playTone(440, 'square', 0.2, 0.2); }
+    function playGoBeep() { playTone(880, 'square', 0.5, 0.3); }
+
+    // Race Timer Updater
+    function updateTimers() {
+      if (!isRacing) return;
+      const now = Date.now();
+      const elapsed = ((now - raceStartTime) / 1000).toFixed(1);
+      
+      if (!finnFinished) finnTimerEl.innerText = elapsed + "s";
+      if (!bowenFinished) bowenTimerEl.innerText = elapsed + "s";
+    }
+
+    // Function to drop a permanent split time marker on the track
+    function recordSplit(laneElement, step, timeString) {
+      const splitEl = document.createElement('div');
+      splitEl.className = 'split-time';
+      splitEl.innerText = timeString;
+      const colWidth = 100 / 12; 
+      const targetPosition = (colWidth * step) + (colWidth / 2);
+      splitEl.style.left = `calc(${targetPosition}%)`;
+      laneElement.appendChild(splitEl);
+    }
+
+    // Countdown Logic
+    startBtn.addEventListener('click', () => {
+      if (isRacing || firstPlaceAnnounced) return;
+      initAudio();
+      
+      startBtn.style.display = 'none';
+      countdownOverlay.style.display = 'flex';
+      
+      let count = 3;
+      countdownText.innerText = count;
+      
+      countdownText.style.animation = 'none';
+      void countdownText.offsetWidth; 
+      countdownText.style.animation = 'pop 1s infinite';
+      
+      playBeep();
+
+      const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownText.innerText = count;
+          playBeep();
+        } else if (count === 0) {
+          countdownText.innerText = "GO!";
+          countdownText.style.color = "#2ecc71";
+          playGoBeep();
+          
+          // Start the Race Timers
+          raceStartTime = Date.now();
+          timerInterval = setInterval(updateTimers, 100);
+          
+        } else {
+          clearInterval(timer);
+          countdownOverlay.style.display = 'none';
+          countdownText.style.color = "#f1c40f"; 
+          isRacing = true;
+        }
+      }, 1000);
+    });
+
+    // Check Finish Line & Inline Celebration
+    function checkFinish(name, step, carElement) {
+      if (step === totalSteps) {
+        
+        if (name === 'Finn') finnFinished = true;
+        if (name === 'Bowen') bowenFinished = true;
+        
+        if (finnFinished && bowenFinished) {
+            clearInterval(timerInterval);
+        }
+
+        if (!firstPlaceAnnounced) {
+            firstPlaceAnnounced = true;
+            
+            carElement.classList.add('is-winner');
+            carElement.innerHTML += " 🏆";
+    
+            confetti({ particleCount: 250, spread: 150, origin: { y: 0.4 }, zIndex: 1000 });
+    
+            window.speechSynthesis.cancel();
+            const announcement = new SpeechSynthesisUtterance(`And the winner is... ${name}!`);
+            announcement.pitch = 1.1;
+            announcement.rate = 1.0;
+            window.speechSynthesis.speak(announcement);
+        }
       }
     }
 
-    // Lane Click Handlers
+    // Lane Clicks
     finnLane.addEventListener('click', () => {
-      if (finnStep < totalSteps && !raceFinished) {
-        playTickSound();
+      if (isRacing && finnStep < totalSteps) {
+        playTick();
         finnStep++;
-        updateCarPosition(finnCar, finnStep);
-        checkWinner('Finn', finnStep);
+        
+        // Only log the split time if they haven't crossed the finish line block
+        if (finnStep < totalSteps) {
+            const splitTime = ((Date.now() - raceStartTime) / 1000).toFixed(1) + "s";
+            recordSplit(finnLane, finnStep, splitTime);
+        }
+
+        updateCarPosition(finnCar, finnTrack, finnStep);
+        checkFinish('Finn', finnStep, finnCar);
       }
     });
 
     bowenLane.addEventListener('click', () => {
-      if (bowenStep < totalSteps && !raceFinished) {
-        playTickSound();
+      if (isRacing && bowenStep < totalSteps) {
+        playTick();
         bowenStep++;
-        updateCarPosition(bowenCar, bowenStep);
-        checkWinner('Bowen', bowenStep);
+        
+        // Only log the split time if they haven't crossed the finish line block
+        if (bowenStep < totalSteps) {
+            const splitTime = ((Date.now() - raceStartTime) / 1000).toFixed(1) + "s";
+            recordSplit(bowenLane, bowenStep, splitTime);
+        }
+
+        updateCarPosition(bowenCar, bowenTrack, bowenStep);
+        checkFinish('Bowen', bowenStep, bowenCar);
       }
     });
 
-    // Reset the race for the next morning
-    resetBtn.addEventListener('click', () => {
+    // Full Reset Logic
+    function resetRace() {
       finnStep = 0;
       bowenStep = 0;
-      raceFinished = false;
-      updateCarPosition(finnCar, finnStep);
-      updateCarPosition(bowenCar, bowenStep);
-      window.speechSynthesis.cancel(); // Stop announcer if resetting early
-    });
+      firstPlaceAnnounced = false;
+      isRacing = false;
+      
+      clearInterval(timerInterval);
+      finnFinished = false;
+      bowenFinished = false;
+      finnTimerEl.innerText = "0.0s";
+      bowenTimerEl.innerText = "0.0s";
+      
+      // Clear out all the split times from the last race
+      document.querySelectorAll('.split-time').forEach(el => el.remove());
+      
+      finnCar.classList.remove('is-winner');
+      bowenCar.classList.remove('is-winner');
+      
+      // Reset the inner HTML cleanly to preserve the vehicle span for the hue shift
+      finnCar.innerHTML = '<span class="vehicle">🏎️</span>';
+      bowenCar.innerHTML = '<span class="vehicle">🏎️</span>';
+
+      updateCarPosition(finnCar, finnTrack, finnStep);
+      updateCarPosition(bowenCar, bowenTrack, bowenStep);
+      window.speechSynthesis.cancel();
+      startBtn.style.display = 'block';
+    }
+
+    resetBtn.addEventListener('click', resetRace);
+
   </script>
 </body>
 </html>
