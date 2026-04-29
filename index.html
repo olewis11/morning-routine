@@ -521,3 +521,203 @@
         laneEl.style.setProperty('--track-progress', '0%');
       } else {
         laneEl.style.setProperty('--track-progress', targetPosition + '%');
+      }
+    }
+    updateCarPosition('finn-lane', finnStep);
+    updateCarPosition('bowen-lane', bowenStep);
+
+    // Auto-Scroll Handler for Mobile
+    function autoScrollMobile(carElement) {
+       if (window.innerWidth <= 1024) {
+           setTimeout(() => {
+               carElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+           }, 50);
+       }
+    }
+
+    // Audio Engine
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playTone(freq, type, duration, vol) {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function playTick() { playTone(800, 'triangle', 0.05, 0.3); }
+    function playBeep() { playTone(440, 'square', 0.2, 0.2); }
+    function playGoBeep() { playTone(880, 'square', 0.5, 0.3); }
+
+    // Race Timer Updater
+    function updateTimers() {
+      if (!isRacing) return;
+      const now = Date.now();
+      const elapsed = ((now - raceStartTime) / 1000).toFixed(1);
+      
+      if (!finnFinished) finnTimerEl.innerText = elapsed + "s";
+      if (!bowenFinished) bowenTimerEl.innerText = elapsed + "s";
+    }
+
+    // Function to drop a permanent split time marker
+    function recordSplit(laneId, step, timeString) {
+      const laneEl = document.getElementById(laneId);
+      const splitEl = document.createElement('div');
+      splitEl.className = 'split-time';
+      splitEl.innerText = timeString;
+      
+      const colWidth = 100 / 12; 
+      const targetPosition = (colWidth * step) + (colWidth / 2);
+      
+      // Injected CSS variable anchors it appropriately on Desktop or Mobile
+      splitEl.style.setProperty('--split-pos', targetPosition + '%');
+      laneEl.appendChild(splitEl);
+    }
+
+    // Countdown Logic
+    startBtn.addEventListener('click', () => {
+      if (isRacing || firstPlaceAnnounced) return;
+      initAudio();
+      
+      startBtn.style.opacity = '0.5';
+      startBtn.style.pointerEvents = 'none';
+      countdownOverlay.style.display = 'flex';
+      
+      let count = 3;
+      countdownText.innerText = count;
+      
+      countdownText.style.animation = 'none';
+      void countdownText.offsetWidth; 
+      countdownText.style.animation = 'pop 1s infinite';
+      
+      playBeep();
+
+      const timer = setInterval(() => {
+        count--;
+        if (count > 0) {
+          countdownText.innerText = count;
+          playBeep();
+        } else if (count === 0) {
+          countdownText.innerText = "GO!";
+          countdownText.style.color = "#2ecc71";
+          playGoBeep();
+          
+          raceStartTime = Date.now();
+          timerInterval = setInterval(updateTimers, 100);
+        } else {
+          clearInterval(timer);
+          countdownOverlay.style.display = 'none';
+          countdownText.style.color = "#f1c40f"; 
+          isRacing = true;
+        }
+      }, 1000);
+    });
+
+    // Check Finish Line & Inline Celebration
+    function checkFinish(name, step, carElement) {
+      if (step === totalSteps) {
+        
+        if (name === 'Finn') finnFinished = true;
+        if (name === 'Bowen') bowenFinished = true;
+
+        if (finnFinished && bowenFinished) {
+            clearInterval(timerInterval);
+        }
+
+        // Only move the car and reveal the trophy if they are the FIRST to finish
+        if (!firstPlaceAnnounced) {
+            firstPlaceAnnounced = true;
+            
+            // Appends the CSS state that handles the winner parking and default orientation entirely via CSS
+            carElement.classList.add('is-winner');
+            carElement.classList.add('finish-orientation');
+            
+            confetti({ particleCount: 250, spread: 150, origin: { y: 0.4 }, zIndex: 1000 });
+            window.speechSynthesis.cancel();
+            
+            const announcement = new SpeechSynthesisUtterance(`And the winner is... ${name}!`);
+            announcement.pitch = 1.1;
+            announcement.rate = 1.0;
+            window.speechSynthesis.speak(announcement);
+        }
+      }
+    }
+
+    // Lane Clicks
+    finnLane.addEventListener('click', () => {
+      if (isRacing && finnStep < totalSteps) {
+        playTick();
+        finnStep++;
+        
+        if (finnStep < totalSteps) {
+            const splitTime = ((Date.now() - raceStartTime) / 1000).toFixed(1) + "s";
+            recordSplit('finn-lane', finnStep, splitTime);
+        }
+
+        updateCarPosition('finn-lane', finnStep);
+        checkFinish('Finn', finnStep, finnCar);
+        autoScrollMobile(finnCar);
+      }
+    });
+
+    bowenLane.addEventListener('click', () => {
+      if (isRacing && bowenStep < totalSteps) {
+        playTick();
+        bowenStep++;
+        
+        if (bowenStep < totalSteps) {
+            const splitTime = ((Date.now() - raceStartTime) / 1000).toFixed(1) + "s";
+            recordSplit('bowen-lane', bowenStep, splitTime);
+        }
+
+        updateCarPosition('bowen-lane', bowenStep);
+        checkFinish('Bowen', bowenStep, bowenCar);
+        autoScrollMobile(bowenCar);
+      }
+    });
+
+    // Full Reset Logic
+    function resetRace() {
+      finnStep = 0;
+      bowenStep = 0;
+      firstPlaceAnnounced = false;
+      isRacing = false;
+      
+      clearInterval(timerInterval);
+      finnFinished = false;
+      bowenFinished = false;
+      finnTimerEl.innerText = "0.0s";
+      bowenTimerEl.innerText = "0.0s";
+      
+      document.querySelectorAll('.split-time').forEach(el => el.remove());
+      
+      finnCar.classList.remove('is-winner');
+      bowenCar.classList.remove('is-winner');
+      finnCar.classList.remove('finish-orientation');
+      bowenCar.classList.remove('finish-orientation');
+
+      updateCarPosition('finn-lane', finnStep);
+      updateCarPosition('bowen-lane', bowenStep);
+      window.speechSynthesis.cancel();
+      
+      startBtn.style.opacity = '1';
+      startBtn.style.pointerEvents = 'auto';
+    }
+
+    resetBtn.addEventListener('click', resetRace);
+
+  </script>
+</body>
+</html>
