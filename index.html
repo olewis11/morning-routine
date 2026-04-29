@@ -22,7 +22,7 @@
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
-      user-select: none; 
+      user-select: none; /* Prevents accidental highlighting */
       -webkit-user-select: none;
     }
 
@@ -30,7 +30,7 @@
       text-align: center;
       color: white;
       padding: 10px;
-      background: #000000; 
+      background: #000000; /* Darker header makes the logo pop */
       box-shadow: 0 4px 6px rgba(0,0,0,0.5);
       z-index: 100;
       display: flex;
@@ -47,8 +47,8 @@
       font-weight: 900; 
       text-transform: uppercase; 
       letter-spacing: 2px;
-      color: #FFD13B; 
-      text-shadow: 4px 4px 0px #E83D33; 
+      color: #FFD13B; /* Bright racing yellow */
+      text-shadow: 4px 4px 0px #E83D33; /* Hard 3D red block shadow */
     }
 
     /* Big Countdown Overlay */
@@ -83,10 +83,6 @@
       flex-direction: column;
     }
 
-    /* ========================================= */
-    /* DESKTOP STYLES (HORIZONTAL DRAG STRIP)    */
-    /* ========================================= */
-
     .track-container {
       flex: 1;
       display: grid;
@@ -95,12 +91,7 @@
       position: relative;
     }
 
-    /* Master Lane CSS Variables */
     .lane {
-      --step: 0;
-      /* Calculates the percentage position across 12 columns */
-      --pos: calc((100% / 12) * var(--step) + (100% / 24));
-      
       position: relative;
       background: var(--asphalt);
       display: flex;
@@ -123,6 +114,7 @@
       pointer-events: none;
     }
 
+    /* General text styling before justification applied */
     .lane-label {
       position: absolute;
       left: 15px;
@@ -147,31 +139,8 @@
       text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
 
-    /* Desktop Justification */
-    #finn-lane .lane-label, #finn-lane .lane-timer, #finn-lane .split-time { bottom: 10px; }
-    #bowen-lane .lane-label, #bowen-lane .lane-timer, #bowen-lane .split-time { bottom: 10px; }
-
-    .tire-track {
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      height: 12px;
-      background: repeating-linear-gradient(90deg, #111, #111 8px, transparent 8px, transparent 16px);
-      z-index: 15;
-      transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1), height 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-      width: var(--pos);
-      opacity: 0.6;
-      pointer-events: none;
-    }
-    
-    /* Hides the tire track perfectly at the starting line */
-    .lane.at-start .tire-track { width: 0 !important; height: 0 !important; }
-
     .split-time {
       position: absolute;
-      --split-pos: calc((100% / 12) * var(--split-step) + (100% / 24));
-      left: var(--split-pos);
       transform: translateX(-50%);
       color: rgba(255,255,255,0.6);
       font-size: 1rem;
@@ -181,8 +150,41 @@
       pointer-events: none;
     }
 
+    /* Justification Rules */
+    #finn-lane .lane-label, 
+    #finn-lane .lane-timer, 
+    #finn-lane .split-time {
+      top: 75%; /* Finn's text sits low in his lane */
+    }
+
+    #bowen-lane .lane-label, 
+    #bowen-lane .lane-timer, 
+    #bowen-lane .split-time {
+      bottom: 10px; /* Bowen's text sits low in his lane */
+    }
+
+    .tire-track {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 12px;
+      background: repeating-linear-gradient(90deg, #111, #111 8px, transparent 8px, transparent 16px);
+      z-index: 15;
+      transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+      width: 0;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
     .guardrail {
-      background: repeating-linear-gradient(45deg, #c0392b, #c0392b 20px, #ecf0f1 20px, #ecf0f1 40px);
+      background: repeating-linear-gradient(
+        45deg,
+        #c0392b,
+        #c0392b 20px,
+        #ecf0f1 20px,
+        #ecf0f1 40px
+      );
       box-shadow: inset 0 3px 5px rgba(0,0,0,0.5), 0 5px 10px rgba(0,0,0,0.5);
       z-index: 10;
     }
@@ -209,8 +211,12 @@
     }
     .task-box:last-child { border-right: none; }
     
-    .task-emoji { font-size: 2.5rem; margin: 4px 0; }
+    .task-emoji {
+      font-size: 2.5rem; 
+      margin: 4px 0;
+    }
 
+    /* Start Button embedded directly in the track */
     .start-box {
       background: #27ae60;
       color: white;
@@ -220,8 +226,11 @@
       cursor: pointer;
       transition: background 0.1s;
     }
-    .start-box:active { background: #1e8449; }
+    .start-box:active {
+      background: #1e8449;
+    }
 
+    /* Pure Checkered Square */
     .finish-box {
       background-color: #fff;
       background-image: 
@@ -232,40 +241,42 @@
       border-right: none;
     }
 
-    /* Base Car Styles */
+    /* CAR AND ANIMATION LAYERS */
     .car {
       position: absolute;
       font-size: 5.5rem; 
       transform: translate(-50%, -50%) scaleX(-1);
+      /* Now smoothly animates both Left (forward) and Top (into the median) */
       transition: left 0.4s cubic-bezier(0.25, 1, 0.5, 1), top 0.4s cubic-bezier(0.25, 1, 0.5, 1);
       user-select: none;
       z-index: 20;
       white-space: nowrap; 
       -webkit-transform-style: preserve-3d;
-      left: var(--pos); /* Auto-calculates based on lane --step */
+      will-change: transform; /* Repaint fix for ghosting smudge */
     }
 
-    /* Desktop starting positions */
-    #finn-car { top: 35%; }
-    #bowen-car { top: 35%; }
+    /* **POLISH**: Center both cars in their asphalt lanes vertically */
+    #finn-car { top: 50%; }
+    #bowen-car { top: 50%; }
 
-    /* Desktop Finish Line Parking coordinates */
-    .lane.finished #finn-car { top: calc(150% + 15px); }
-    .lane.finished #bowen-car { top: calc(-50% - 15px); }
+    .bouncer {
+      display: inline-block;
+      position: relative; /* Anchors the trophy */
+    }
 
-    .bouncer { display: inline-block; position: relative; }
-    
     .vehicle {
       display: inline-block;
       filter: drop-shadow(-4px 4px 5px rgba(0,0,0,0.5));
       -webkit-filter: drop-shadow(-4px 4px 5px rgba(0,0,0,0.5));
     }
 
+    /* Paint Bowen's vehicle blue WITHOUT painting the trophy */
     #bowen-car .vehicle {
       filter: drop-shadow(-4px 4px 5px rgba(0,0,0,0.5)) hue-rotate(220deg);
       -webkit-filter: drop-shadow(-4px 4px 5px rgba(0,0,0,0.5)) hue-rotate(220deg);
     }
 
+    /* The Trophy element: Hidden by default, correctly un-flipped */
     .trophy {
       display: none;
       position: absolute;
@@ -275,21 +286,39 @@
       transform: translateX(-50%) scaleX(-1); 
     }
 
-    .lane.is-winner .trophy { display: block; }
+    /* Reveal the trophy when they win */
+    .is-winner .trophy {
+      display: block;
+    }
 
-    /* Desktop Trophy Bouncing */
-    #finn-car .trophy { bottom: 85%; animation: bounceTrophyFinn 0.5s infinite alternate ease-in-out; }
-    #bowen-car .trophy { top: 85%; animation: bounceTrophyBowen 0.5s infinite alternate ease-in-out; }
+    /* Finn's trophy bounces ABOVE the car */
+    #finn-car .trophy {
+      bottom: 85%;
+      animation: bounceTrophyFinn 0.5s infinite alternate ease-in-out;
+    }
+
+    /* Bowen's trophy bounces BELOW the car */
+    #bowen-car .trophy {
+      top: 85%;
+      animation: bounceTrophyBowen 0.5s infinite alternate ease-in-out;
+    }
 
     @keyframes bounceTrophyFinn {
       0% { transform: translateX(-50%) scaleX(-1) translateY(0); }
       100% { transform: translateX(-50%) scaleX(-1) translateY(-25px); }
     }
+
     @keyframes bounceTrophyBowen {
       0% { transform: translateX(-50%) scaleX(-1) translateY(0); }
       100% { transform: translateX(-50%) scaleX(-1) translateY(25px); }
     }
 
+    /* **POLISH**: New class to snap the winning car to default forward facing orientation */
+    .finish-orientation {
+        transform: translate(-50%, -50%) !important; /* Removes scaleX(-1) */
+    }
+
+    /* Grandstand Area */
     .grandstand {
       flex: 0 0 50vh;
       width: 100%;
@@ -301,6 +330,7 @@
       box-shadow: inset 0 15px 20px rgba(0,0,0,0.4);
     }
 
+    /* Controls Bottom Right */
     .controls {
       position: absolute;
       bottom: 15px;
@@ -322,109 +352,21 @@
     }
     .reset-btn:hover { background: #c0392b; }
 
-    /* ========================================= */
-    /* MOBILE STYLES (THE VERTICAL DROP)         */
-    /* ========================================= */
-    
-    @media (max-width: 800px) {
-      .scroll-wrapper {
-        overflow-x: hidden;
-        overflow-y: auto;
-      }
-      
-      .track-container {
-        /* Flips the grid 90 degrees */
-        grid-template-columns: 1fr 15px 1.5fr 15px 1fr;
-        grid-template-rows: 1fr; 
-        min-width: 100%;
-        min-height: 1400px; /* Provides plenty of vertical scrolling room */
-      }
-      
-      .median {
-        grid-template-columns: 1fr;
-        grid-template-rows: repeat(12, 1fr);
-      }
-      
-      .task-box {
-        border-right: none;
-        border-bottom: 2px dashed rgba(255,255,255,0.2);
-      }
-      .task-box:last-child { border-bottom: none; }
-      
-      .lane::after {
-        top: 0; bottom: 0; left: 50%; right: auto;
-        width: 4px; height: 100%;
-        transform: translateX(-50%);
-        background: repeating-linear-gradient(180deg, #fff, #fff 40px, transparent 40px, transparent 80px);
-      }
-      
-      .tire-track {
-        top: 0; left: 50%; width: 12px; height: var(--pos); /* Height is now bound to the CSS variable! */
-        transform: translateX(-50%);
-        background: repeating-linear-gradient(180deg, #111, #111 8px, transparent 8px, transparent 16px);
-      }
-      
-      /* Cars point downhill and drive top-to-bottom */
-      .car {
-        top: var(--pos);
-        left: 50%;
-        transform: translate(-50%, -50%) rotate(-90deg);
-      }
-      #finn-car, #bowen-car { top: var(--pos); left: 50%; } 
-      
-      /* Mobile Finish Line Parking Coordinates */
-      .lane.finished #finn-car { top: var(--pos); left: calc(175% + 15px); }
-      .lane.finished #bowen-car { top: var(--pos); left: calc(-75% - 15px); }
-      
-      /* Drops split times vertically beside the track */
-      .split-time {
-         top: var(--split-pos); bottom: auto;
-         transform: translateY(-50%);
-      }
-      /* Put Finn's splits on the right of his line, Bowen's on the left, to avoid clipping */
-      #finn-lane .split-time { left: 75%; }
-      #bowen-lane .split-time { left: 25%; }
-      
-      /* Drops names and timers cleanly to the absolute bottom of the scroll screen */
-      .lane-label, .lane-timer {
-         left: 50%; right: auto;
-         transform: translateX(-50%);
-         text-align: center;
-         text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-      }
-      #finn-lane .lane-label, #bowen-lane .lane-label { bottom: 60px; }
-      #finn-lane .lane-timer, #bowen-lane .lane-timer { bottom: 20px; }
-
-      /* Mobile Trophy specific orientation and bounce rules */
-      .trophy { transform: translateX(-50%) rotate(90deg); }
-      
-      #finn-car .trophy { 
-          bottom: auto; top: 50%; left: -50px; 
-          animation: bounceTrophyFinnMob 0.5s infinite alternate ease-in-out; 
-      }
-      #bowen-car .trophy { 
-          top: 50%; bottom: auto; right: -50px; left: auto;
-          animation: bounceTrophyBowenMob 0.5s infinite alternate ease-in-out; 
-      }
+    /* **POLISH**: Mobile Style Section for responsive design */
+    @media (max-width: 1024px) {
+        .grandstand {
+            display: none !important; /* Hide grandstand on mobile screens */
+        }
+        
+        /* **POLISH**: Shrink and compact the title for mobile dashboard */
+        h1 {
+            font-size: 2rem;
+            margin: 5px 0;
+            line-height: 1;
+            white-space: nowrap; /* Single line */
+        }
     }
 
-    @keyframes bounceTrophyFinnMob {
-      0% { transform: translateY(-50%) rotate(90deg) translateX(0); }
-      100% { transform: translateY(-50%) rotate(90deg) translateX(-25px); }
-    }
-    @keyframes bounceTrophyBowenMob {
-      0% { transform: translateY(-50%) rotate(90deg) translateX(0); }
-      100% { transform: translateY(-50%) rotate(90deg) translateX(25px); }
-    }
-
-  /* This targets screens smaller than 1024px (roughly landscape tablet size and down) */
-  @media (max-width: 1024px) {
-      .grandstand {
-          /* This removes the element entirely on smaller screens, reclaiming the space */
-          display: none !important;
-    }
-}
-    
   </style>
 </head>
 <body>
@@ -440,10 +382,10 @@
   <div class="scroll-wrapper">
     <div class="track-container">
       
-      <div class="lane at-start" id="finn-lane">
+      <div class="lane" id="finn-lane">
         <div class="lane-label">FINN</div>
         <div class="lane-timer" id="finn-timer">0.0s</div>
-        <div class="tire-track"></div>
+        <div class="tire-track" id="finn-track"></div>
         <div class="car" id="finn-car">
           <div class="bouncer">
             <span class="vehicle">🏎️</span>
@@ -471,10 +413,10 @@
       
       <div class="guardrail"></div>
       
-      <div class="lane at-start" id="bowen-lane">
+      <div class="lane" id="bowen-lane">
         <div class="lane-label">BOWEN</div>
         <div class="lane-timer" id="bowen-timer">0.0s</div>
-        <div class="tire-track"></div>
+        <div class="tire-track" id="bowen-track"></div>
         <div class="car" id="bowen-car">
           <div class="bouncer">
             <span class="vehicle">🏎️</span>
@@ -507,6 +449,10 @@
     let finnFinished = false;
     let bowenFinished = false;
 
+    const finnCar = document.getElementById('finn-car');
+    const bowenCar = document.getElementById('bowen-car');
+    const finnTrack = document.getElementById('finn-track');
+    const bowenTrack = document.getElementById('bowen-track');
     const finnLane = document.getElementById('finn-lane');
     const bowenLane = document.getElementById('bowen-lane');
     const finnTimerEl = document.getElementById('finn-timer');
@@ -517,15 +463,21 @@
     const countdownOverlay = document.getElementById('countdown-overlay');
     const countdownText = document.getElementById('countdown-text');
 
-    // JS no longer hardcodes pixels! It just updates the CSS Custom Variable
-    function updateCarPosition(laneElement, step) {
-      laneElement.style.setProperty('--step', step);
+    // Init Cars and Tracks
+    function updateCarPosition(carElement, trackElement, step) {
+      const colWidth = 100 / 12; 
+      const targetPosition = (colWidth * step) + (colWidth / 2);
+      carElement.style.left = `calc(${targetPosition}%)`;
+      
+      // Ensure tire tracks are completely hidden before moving
       if (step === 0) {
-        laneElement.classList.add('at-start');
+        trackElement.style.width = `0`;
       } else {
-        laneElement.classList.remove('at-start');
+        trackElement.style.width = `calc(${targetPosition}%)`;
       }
     }
+    updateCarPosition(finnCar, finnTrack, finnStep);
+    updateCarPosition(bowenCar, bowenTrack, bowenStep);
 
     // Audio Engine
     function initAudio() {
@@ -563,12 +515,14 @@
       if (!bowenFinished) bowenTimerEl.innerText = elapsed + "s";
     }
 
-    // Drop split times using CSS variable positioning
+    // Function to drop a permanent split time marker on the track
     function recordSplit(laneElement, step, timeString) {
       const splitEl = document.createElement('div');
       splitEl.className = 'split-time';
       splitEl.innerText = timeString;
-      splitEl.style.setProperty('--split-step', step);
+      const colWidth = 100 / 12; 
+      const targetPosition = (colWidth * step) + (colWidth / 2);
+      splitEl.style.left = `calc(${targetPosition}%)`;
       laneElement.appendChild(splitEl);
     }
 
@@ -600,8 +554,10 @@
           countdownText.style.color = "#2ecc71";
           playGoBeep();
           
+          // Start the Race Timers
           raceStartTime = Date.now();
           timerInterval = setInterval(updateTimers, 100);
+          
         } else {
           clearInterval(timer);
           countdownOverlay.style.display = 'none';
@@ -611,9 +567,10 @@
       }, 1000);
     });
 
-    // Check Finish Line (CSS safely handles all the movement logic now!)
-    function checkFinish(name, step, laneElement) {
+    // Check Finish Line & Inline Celebration
+    function checkFinish(name, step, carElement) {
       if (step === totalSteps) {
+        
         if (name === 'Finn') finnFinished = true;
         if (name === 'Bowen') bowenFinished = true;
 
@@ -621,18 +578,32 @@
             clearInterval(timerInterval);
         }
 
+        // Only move the car and reveal the trophy if they are the FIRST to finish
         if (!firstPlaceAnnounced) {
             firstPlaceAnnounced = true;
-            laneElement.classList.add('is-winner');
-            laneElement.classList.add('finished');
+            
+            // Apply winning classes so the trophy reveals and bounces
+            carElement.classList.add('is-winner');
+            
+            // **FIX**: Apply class to snap car to forward facing orientation
+            carElement.classList.add('finish-orientation');
+
+            // Drive into the checkered median! **POLISH**: Center them perfectly vertically in the dirt road
+            if (name === 'Finn') {
+                carElement.style.top = '150%'; /* Finn drives down into median */
+            } else if (name === 'Bowen') {
+                carElement.style.top = '-50%'; /* Bo drives up into median */
+            }
             
             confetti({ particleCount: 250, spread: 150, origin: { y: 0.4 }, zIndex: 1000 });
+    
             window.speechSynthesis.cancel();
             const announcement = new SpeechSynthesisUtterance(`And the winner is... ${name}!`);
             announcement.pitch = 1.1;
             announcement.rate = 1.0;
             window.speechSynthesis.speak(announcement);
         }
+        // If firstPlaceAnnounced is already true, the second place car simply stops and stays in its lane!
       }
     }
 
@@ -641,12 +612,14 @@
       if (isRacing && finnStep < totalSteps) {
         playTick();
         finnStep++;
+        
         if (finnStep < totalSteps) {
             const splitTime = ((Date.now() - raceStartTime) / 1000).toFixed(1) + "s";
             recordSplit(finnLane, finnStep, splitTime);
         }
-        updateCarPosition(finnLane, finnStep);
-        checkFinish('Finn', finnStep, finnLane);
+
+        updateCarPosition(finnCar, finnTrack, finnStep);
+        checkFinish('Finn', finnStep, finnCar);
       }
     });
 
@@ -654,12 +627,14 @@
       if (isRacing && bowenStep < totalSteps) {
         playTick();
         bowenStep++;
+        
         if (bowenStep < totalSteps) {
             const splitTime = ((Date.now() - raceStartTime) / 1000).toFixed(1) + "s";
             recordSplit(bowenLane, bowenStep, splitTime);
         }
-        updateCarPosition(bowenLane, bowenStep);
-        checkFinish('Bowen', bowenStep, bowenLane);
+
+        updateCarPosition(bowenCar, bowenTrack, bowenStep);
+        checkFinish('Bowen', bowenStep, bowenCar);
       }
     });
 
@@ -676,15 +651,25 @@
       finnTimerEl.innerText = "0.0s";
       bowenTimerEl.innerText = "0.0s";
       
+      // Clear out all the split times from the last race
       document.querySelectorAll('.split-time').forEach(el => el.remove());
       
-      finnLane.classList.remove('is-winner', 'finished');
-      bowenLane.classList.remove('is-winner', 'finished');
-
-      updateCarPosition(finnLane, finnStep);
-      updateCarPosition(bowenLane, bowenStep);
+      // Removing the class instantly hides the trophy and stops the bounce
+      finnCar.classList.remove('is-winner');
+      bowenCar.classList.remove('is-winner');
       
+      // **FIX**: Remove finishing orientation class
+      finnCar.classList.remove('finish-orientation');
+      bowenCar.classList.remove('finish-orientation');
+
+      // **POLISH**: Center both cars in their asphalt lanes vertically
+      finnCar.style.top = '50%';
+      bowenCar.style.top = '50%';
+
+      updateCarPosition(finnCar, finnTrack, finnStep);
+      updateCarPosition(bowenCar, bowenTrack, bowenStep);
       window.speechSynthesis.cancel();
+      
       startBtn.style.opacity = '1';
       startBtn.style.pointerEvents = 'auto';
     }
