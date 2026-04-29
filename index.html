@@ -322,7 +322,6 @@
     }
     .reset-btn:hover { background: #c0392b; }
 
-
     /* ========================================= */
     /* MOBILE STYLES (THE VERTICAL DROP)         */
     /* ========================================= */
@@ -418,6 +417,14 @@
       100% { transform: translateY(-50%) rotate(90deg) translateX(25px); }
     }
 
+  /* This targets screens smaller than 1024px (roughly landscape tablet size and down) */
+  @media (max-width: 1024px) {
+      .grandstand {
+          /* This removes the element entirely on smaller screens, reclaiming the space */
+          display: none !important;
+    }
+}
+    
   </style>
 </head>
 <body>
