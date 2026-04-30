@@ -94,7 +94,7 @@ function renderSplitMarker(racerId, timeString) {
 }
 
 function formatElapsed(elapsedSec) {
-  if (elapsedSec > 59) {
+  if (elapsedSec >= 60) {
     const mins = Math.floor(elapsedSec / 60);
     const secs = Math.floor(elapsedSec % 60);
     return `${mins}:${String(secs).padStart(2, '0')}`;

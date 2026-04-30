@@ -142,8 +142,8 @@ h1 {
   z-index: 10;
 }
 
-#finn-lane  .lane-label { color: #e74c3c; }
-#bowen-lane .lane-label { color: #3d8fdb; }
+#finn-lane  .lane-label { color: #e74c3c; text-shadow: 3px 3px 0px #7b241c; }
+#bowen-lane .lane-label { color: #3d8fdb; text-shadow: 3px 3px 0px #1a5276; }
 
 .lane-timer {
   position: absolute;
