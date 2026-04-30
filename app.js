@@ -7,8 +7,8 @@ const state = {
   countdownTimer: null,
   totalSteps: 11,
   racers: {
-    finn:  { step: 0, finished: false, nameDisplay: 'Finn',  finishOffset: 'calc(150% + 15px)', mobileFinishOffset: 'calc(100% / 12 * 11.5 - 15px)' },
-    bowen: { step: 0, finished: false, nameDisplay: 'Bowen', finishOffset: 'calc(-50% - 15px)',  mobileFinishOffset: 'calc(100% / 12 * 11.5 - 15px)' }
+    finn:  { step: 0, finished: false, nameDisplay: 'Finn',  finishOffset: 'calc(150% + 15px)', mobileFinishOffset: 'calc(100% / 12 * 11.5)' },
+    bowen: { step: 0, finished: false, nameDisplay: 'Bowen', finishOffset: 'calc(-50% - 15px)',  mobileFinishOffset: 'calc(100% / 12 * 11.5)' }
   }
 };
 
@@ -320,3 +320,16 @@ setupLane('bowen');
 // Run initial setup
 renderCarPosition('finn');
 renderCarPosition('bowen');
+
+// === 7. ZOOM PREVENTION (mobile) ===
+// iOS Safari ignores user-scalable=no; block pinch and double-tap zoom in JS.
+document.addEventListener('touchmove', (e) => {
+  if (e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+  const now = Date.now();
+  if (now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
+}, { passive: false });
