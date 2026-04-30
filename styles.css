@@ -16,6 +16,7 @@ body {
   position: relative;
   user-select: none;
   -webkit-user-select: none;
+  touch-action: manipulation;
 }
 
 header {
@@ -133,13 +134,16 @@ h1 {
 .lane-label {
   position: absolute;
   left: 15px;
-  color: #ffffff;
+  color: #abb2b9;
   font-weight: 700;
   font-size: 1.5rem;
   pointer-events: none;
   letter-spacing: 3px;
   z-index: 10;
 }
+
+#finn-lane  .lane-label { color: #e74c3c; }
+#bowen-lane .lane-label { color: #3d8fdb; }
 
 .lane-timer {
   position: absolute;
@@ -376,7 +380,8 @@ h1 {
 
 .controls {
   position: absolute;
-  bottom: 15px;
+  top: calc(50vh + 15px);
+  bottom: auto;
   right: 15px;
   z-index: 100;
 }
@@ -574,10 +579,10 @@ h1 {
   #finn-timer  { left: calc((100vw - 30px) / 6); }
   #bowen-timer { left: calc((100vw - 30px) * 5 / 6 + 30px); }
 
-  /* Split times pinned to outer edge of each lane */
-  .split-time { transform: translateY(-50%); }
+  /* Split times pinned to outer edge of each lane, above tire tracks */
+  .split-time { transform: translateY(-50%); z-index: 20; }
   #finn-lane .split-time  { left: 5px; right: auto; }
-  #bowen-lane .split-time { right: 5px; left: auto; }
+  #bowen-lane .split-time { left: 5px; right: auto; }
 
   /* Result text — bottom of lane, above the timer */
   .result-text {
@@ -606,6 +611,8 @@ h1 {
 
   /* Center reset button so it doesn't overlap the fixed timers */
   .controls {
+    top: auto;
+    bottom: 15px;
     left: 50%;
     right: auto;
     transform: translateX(-50%);

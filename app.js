@@ -93,13 +93,23 @@ function renderSplitMarker(racerId, timeString) {
   ui.lanes[racerId].appendChild(splitEl);
 }
 
+function formatElapsed(elapsedSec) {
+  if (elapsedSec > 99) {
+    const mins = Math.floor(elapsedSec / 60);
+    const secs = Math.floor(elapsedSec % 60);
+    return `${mins}:${String(secs).padStart(2, '0')}`;
+  }
+  return elapsedSec.toFixed(1) + 's';
+}
+
 function renderTimers() {
   if (!state.isRacing) return;
-  const elapsed = ((Date.now() - state.raceStartTime) / 1000).toFixed(1) + "s";
+  const elapsedSec = (Date.now() - state.raceStartTime) / 1000;
+  const timeStr = formatElapsed(elapsedSec);
 
   Object.keys(state.racers).forEach(racerId => {
     if (!state.racers[racerId].finished) {
-      ui.timers[racerId].innerText = elapsed;
+      ui.timers[racerId].innerText = timeStr;
     }
   });
 }
@@ -216,7 +226,7 @@ function advanceRacer(racerId) {
   state.racers[racerId].step++;
 
   if (state.racers[racerId].step < state.totalSteps) {
-    const splitTime = ((Date.now() - state.raceStartTime) / 1000).toFixed(1) + "s";
+    const splitTime = formatElapsed((Date.now() - state.raceStartTime) / 1000);
     renderSplitMarker(racerId, splitTime);
   }
 
@@ -322,14 +332,9 @@ renderCarPosition('finn');
 renderCarPosition('bowen');
 
 // === 7. ZOOM PREVENTION (mobile) ===
-// iOS Safari ignores user-scalable=no; block pinch and double-tap zoom in JS.
+// iOS Safari ignores user-scalable=no.
+// - Pinch zoom: blocked via touchmove (passive: false allows preventDefault).
+// - Double-tap zoom: blocked via touch-action: manipulation on body (CSS).
 document.addEventListener('touchmove', (e) => {
   if (e.touches.length > 1) e.preventDefault();
-}, { passive: false });
-
-let lastTouchEnd = 0;
-document.addEventListener('touchend', (e) => {
-  const now = Date.now();
-  if (now - lastTouchEnd < 300) e.preventDefault();
-  lastTouchEnd = now;
 }, { passive: false });
