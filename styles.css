@@ -133,7 +133,7 @@ h1 {
 .lane-label {
   position: absolute;
   left: 15px;
-  color: rgba(255,255,255,0.4);
+  color: #ffffff;
   font-weight: 700;
   font-size: 1.5rem;
   pointer-events: none;
@@ -144,21 +144,21 @@ h1 {
 .lane-timer {
   position: absolute;
   right: 15px;
-  color: #f1c40f;
+  color: #FFD13B;
   font-size: 1.5rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: 1px;
   z-index: 10;
   pointer-events: none;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 3px 3px 0px #E83D33;
 }
 
 .split-time {
   position: absolute;
   transform: translateX(-50%);
   color: rgba(255,255,255,0.3);
-  font-size: 0.7rem;
+  font-size: 0.91rem;
   font-weight: 400;
   font-variant-numeric: tabular-nums;
   z-index: 10;
@@ -396,6 +396,218 @@ h1 {
 .reset-btn:hover { background: #c0392b; }
 
 @media (max-width: 1024px) {
+
+  /* === INTERFACE COMPACTING === */
   .grandstand { display: none !important; }
   h1 { font-size: 2rem; margin: 5px 0; line-height: 1; white-space: nowrap; }
+
+  /* === VERTICAL TRACK TRANSFORMATION === */
+  .scroll-wrapper {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .track-container {
+    grid-template-rows: none;
+    grid-template-columns: 1fr 15px 1fr 15px 1fr;
+    min-width: unset;
+    width: 100%;
+    min-height: 1050px;
+    height: auto;
+  }
+
+  /* Vertical weathering — side edges darken, wear runs along the driving line */
+  .lane {
+    background-image:
+      linear-gradient(to right,
+        rgba(0,0,0,0.3) 0%, transparent 28%,
+        transparent 72%, rgba(0,0,0,0.3) 100%
+      ),
+      radial-gradient(ellipse 30% 85% at 50% 50%,
+        rgba(6,4,2,0.28) 0%, transparent 100%
+      ),
+      radial-gradient(ellipse 65% 8% at 50% 20%,
+        rgba(3,3,7,0.22) 0%, transparent 100%
+      ),
+      radial-gradient(ellipse 55% 6% at 50% 52%,
+        rgba(3,3,7,0.16) 0%, transparent 100%
+      ),
+      radial-gradient(ellipse 60% 10% at 50% 76%,
+        rgba(80,75,65,0.2) 0%, transparent 100%
+      ),
+      repeating-linear-gradient(
+        7deg,
+        transparent 0px, transparent 120px,
+        rgba(0,0,0,0.03) 120px, rgba(0,0,0,0.03) 122px,
+        transparent 122px, transparent 240px
+      );
+  }
+
+  .lane::after {
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    right: auto;
+    width: 4px;
+    height: 100%;
+    background: repeating-linear-gradient(180deg, #fff, #fff 40px, transparent 40px, transparent 80px);
+    transform: translateX(-50%);
+  }
+
+  /* height: 100% lets repeat(12, 1fr) rows fill the full column */
+  .median {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(12, 1fr);
+    height: 100%;
+    background-image:
+      linear-gradient(to right,
+        rgba(0,0,0,0.3) 0%, transparent 35%,
+        transparent 65%, rgba(0,0,0,0.3) 100%
+      ),
+      radial-gradient(ellipse 80% 7% at 50% 10%,
+        rgba(180,130,80,0.28) 0%, transparent 100%
+      ),
+      radial-gradient(ellipse 70% 6% at 50% 24%,
+        rgba(22,10,4,0.24) 0%, transparent 100%
+      ),
+      radial-gradient(ellipse 85% 8% at 50% 40%,
+        rgba(190,150,95,0.22) 0%, transparent 100%
+      ),
+      radial-gradient(ellipse 75% 6% at 50% 57%,
+        rgba(28,13,5,0.2) 0%, transparent 100%
+      ),
+      radial-gradient(ellipse 80% 7% at 50% 72%,
+        rgba(175,125,70,0.24) 0%, transparent 100%
+      ),
+      radial-gradient(ellipse 65% 5% at 50% 86%,
+        rgba(20,9,3,0.2) 0%, transparent 100%
+      ),
+      radial-gradient(ellipse 85% 7% at 50% 96%,
+        rgba(200,155,100,0.22) 0%, transparent 100%
+      ),
+      repeating-linear-gradient(
+        11deg,
+        transparent 0px, transparent 90px,
+        rgba(0,0,0,0.03) 90px, rgba(0,0,0,0.03) 92px,
+        transparent 92px, transparent 180px
+      );
+  }
+
+  .task-box {
+    border-right: none;
+    border-bottom: 2px dashed rgba(255,255,255,0.2);
+    font-size: 1rem;
+    padding: 6px 4px;
+  }
+  .task-box:last-child { border-bottom: none; }
+  .task-emoji { font-size: 2rem; margin: 3px 0; }
+
+  .start-box {
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    padding: 12px 4px;
+    min-height: 112px;
+  }
+
+  /* Override desktop top/left so cars don't flash to wrong position before JS runs */
+  #finn-car, #bowen-car { top: calc(100% / 12 - 40px); }
+  #finn-car  { left: 40%; }
+  #bowen-car { left: 40%; }
+
+  /* === CAR ORIENTATION === */
+  .car {
+    transform: translate(-50%, -50%) rotate(-90deg);
+    transition: top 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  #finn-car  { left: 40%; }
+  #bowen-car { left: 40%; }
+
+  .finish-orientation { transform: translate(-50%, -50%) !important; }
+
+  /* === TIRE TRACK — vertical, aligned with bottom (wheel side) of rotated emoji === */
+  .tire-track {
+    top: 0;
+    width: 3.6px;
+    height: 0;
+    background: repeating-linear-gradient(180deg,
+      rgba(0,0,0,0.7) 0, rgba(0,0,0,0.7) 20px,
+      transparent 20px, transparent 40px);
+    -webkit-mask-image: linear-gradient(to bottom,
+      transparent 0%, rgba(0,0,0,0.4) 15%, black 55%);
+    mask-image: linear-gradient(to bottom,
+      transparent 0%, rgba(0,0,0,0.4) 15%, black 55%);
+    transition: height 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  #finn-track  { left: calc(40% + 2rem); }
+  #bowen-track { left: calc(40% + 2rem); }
+
+  /* === LABELS — horizontal, pinned to outer edges === */
+  #finn-lane .lane-label,
+  #finn-lane .split-time,
+  #bowen-lane .lane-label,
+  #bowen-lane .split-time { bottom: auto; }
+
+  .lane-label {
+    top: 8px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    writing-mode: horizontal-tb;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+  }
+
+  #finn-lane .lane-label  { top: 8px; }
+  #bowen-lane .lane-label { top: 8px; }
+
+  /* Fixed timers — always visible at viewport bottom, centered in each lane column.
+     Grid is 1fr 15px 1fr 15px 1fr so each lane = (100vw - 30px) / 3 wide. */
+  .lane-timer {
+    position: fixed;
+    bottom: 12px;
+    right: auto;
+    transform: translateX(-50%);
+    font-size: 1.5rem;
+  }
+  #finn-timer  { left: calc((100vw - 30px) / 6); }
+  #bowen-timer { left: calc((100vw - 30px) * 5 / 6 + 30px); }
+
+  /* Split times pinned to outer edge of each lane */
+  .split-time { transform: translateY(-50%); }
+  #finn-lane .split-time  { left: 5px; right: auto; }
+  #bowen-lane .split-time { right: 5px; left: auto; }
+
+  /* Result text — bottom of lane, above the timer */
+  .result-text {
+    top: auto;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .result-text.loser {
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    max-width: 90%;
+    white-space: normal;
+    text-align: center;
+    bottom: 110px;
+  }
+
+  /* === TROPHY AT FINISH (bottom of lane column) === */
+  .trophy {
+    left: 50%;
+    top: calc(100% / 12 * 11.5);
+  }
+
+  /* Center reset button so it doesn't overlap the fixed timers */
+  .controls {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+  }
 }

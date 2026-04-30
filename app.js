@@ -7,8 +7,8 @@ const state = {
   countdownTimer: null,
   totalSteps: 11,
   racers: {
-    finn:  { step: 0, finished: false, nameDisplay: 'Finn',  finishOffset: 'calc(150% + 15px)' },
-    bowen: { step: 0, finished: false, nameDisplay: 'Bowen', finishOffset: 'calc(-50% - 15px)' }
+    finn:  { step: 0, finished: false, nameDisplay: 'Finn',  finishOffset: 'calc(150% + 15px)', mobileFinishOffset: 'calc(100% / 12 * 11.5 - 15px)' },
+    bowen: { step: 0, finished: false, nameDisplay: 'Bowen', finishOffset: 'calc(-50% - 15px)',  mobileFinishOffset: 'calc(100% / 12 * 11.5 - 15px)' }
   }
 };
 
@@ -22,9 +22,11 @@ const ui = {
   countdownText: document.getElementById('countdown-text'),
   lanes:  { finn: document.getElementById('finn-lane'), bowen: document.getElementById('bowen-lane') },
   timers: { finn: document.getElementById('finn-timer'), bowen: document.getElementById('bowen-timer') },
-  cars:   { finn: document.getElementById('finn-car'), bowen: document.getElementById('bowen-car') },
+  cars:   { finn: document.getElementById('finn-car'),  bowen: document.getElementById('bowen-car') },
   tracks: { finn: document.getElementById('finn-track'), bowen: document.getElementById('bowen-track') }
 };
+
+const isMobile = () => window.matchMedia('(max-width: 1024px)').matches;
 
 // === 3. AUDIO ENGINE ===
 function initAudio() {
@@ -55,10 +57,21 @@ const playReverse = () => playTone(280, 'sawtooth', 0.25, 0.25);
 function renderCarPosition(racerId) {
   const step = state.racers[racerId].step;
   const colWidth = 100 / 12;
-  const targetPosition = (colWidth * step) + (colWidth / 2);
+  const startOffset = (isMobile() && step === 0) ? colWidth / 2 : 0;
+  const targetPosition = (colWidth * step) + (colWidth / 2) + startOffset;
 
-  ui.cars[racerId].style.left = `calc(${targetPosition}%)`;
-  ui.tracks[racerId].style.width = step === 0 ? `0` : `calc(${targetPosition}%)`;
+  if (isMobile()) {
+    const topValue = step === 0 ? `calc(${targetPosition}% - 40px)` : `calc(${targetPosition}%)`;
+    ui.cars[racerId].style.top  = topValue;
+    ui.cars[racerId].style.left = '40%';
+    ui.tracks[racerId].style.height = step === 0 ? '0' : `calc(${targetPosition}%)`;
+    ui.tracks[racerId].style.width  = '';
+  } else {
+    ui.cars[racerId].style.left = `calc(${targetPosition}%)`;
+    ui.cars[racerId].style.top  = '';
+    ui.tracks[racerId].style.width  = step === 0 ? '0' : `calc(${targetPosition}%)`;
+    ui.tracks[racerId].style.height = '';
+  }
 }
 
 function renderSplitMarker(racerId, timeString) {
@@ -69,7 +82,13 @@ function renderSplitMarker(racerId, timeString) {
 
   const colWidth = 100 / 12;
   const targetPosition = (colWidth * step) + (colWidth / 2);
-  splitEl.style.left = `calc(${targetPosition}%)`;
+
+  if (isMobile()) {
+    splitEl.style.top = `calc(${targetPosition}%)`;
+    // left/right pinned to outer edge per lane via CSS
+  } else {
+    splitEl.style.left = `calc(${targetPosition}%)`;
+  }
 
   ui.lanes[racerId].appendChild(splitEl);
 }
@@ -144,14 +163,33 @@ function handleFinishLine(racerId) {
       clearInterval(state.timerInterval);
     }
 
+    const carEl = ui.cars[racerId];
+
     if (!state.firstPlaceAnnounced) {
       state.firstPlaceAnnounced = true;
 
-      const carEl = ui.cars[racerId];
+      // Winner: reorient car and move it to the checkered finish square
       carEl.classList.add('finish-orientation');
-      carEl.style.top = racer.finishOffset;
-      ui.lanes[racerId].classList.add('is-winner');
+      const laneRect  = ui.lanes[racerId].getBoundingClientRect();
+      const trophyEl  = ui.lanes[racerId].querySelector('.trophy');
+      if (isMobile()) {
+        carEl.style.top = racer.mobileFinishOffset;
+        const medianCenterX = window.innerWidth / 2;
+        const leftPct = ((medianCenterX - laneRect.left) / laneRect.width) * 100;
+        carEl.style.left   = `${leftPct.toFixed(1)}%`;
+        trophyEl.style.left = `${leftPct.toFixed(1)}%`;
+        trophyEl.style.top  = `calc(${racer.mobileFinishOffset} - 3.5rem)`;
+      } else {
+        // Desktop: median is the horizontal centre of the track container
+        const trackRect    = document.querySelector('.track-container').getBoundingClientRect();
+        const medianCenterY = trackRect.top + trackRect.height / 2;
+        const topPct = ((medianCenterY - laneRect.top) / laneRect.height) * 100;
+        carEl.style.top    = `${topPct.toFixed(1)}%`;
+        trophyEl.style.top = `calc(${topPct.toFixed(1)}% - 3.5rem)`;
+        // left is already at the finish-line position from renderCarPosition
+      }
 
+      ui.lanes[racerId].classList.add('is-winner');
       addResultText(racerId, true);
 
       confetti({ particleCount: 250, spread: 150, origin: { y: 0.4 }, zIndex: 1000 });
@@ -162,6 +200,11 @@ function handleFinishLine(racerId) {
       announcement.rate = 1.0;
       window.speechSynthesis.speak(announcement);
     } else {
+      // Loser on mobile: match winner orientation and center in lane
+      if (isMobile()) {
+        carEl.classList.add('finish-orientation');
+        carEl.style.left = '50%';
+      }
       addResultText(racerId, false);
     }
   }
@@ -179,6 +222,10 @@ function advanceRacer(racerId) {
 
   renderCarPosition(racerId);
   handleFinishLine(racerId);
+
+  if (isMobile()) {
+    ui.cars[racerId].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
 function regressRacer(racerId) {
@@ -199,7 +246,7 @@ function resetRace() {
   clearInterval(state.timerInterval);
   ui.countdownOverlay.style.display = 'none';
   ui.countdownText.style.color = '#f1c40f';
-  ui.countdownText.style.textShadow = "";
+  ui.countdownText.style.textShadow = '';
 
   document.querySelectorAll('.split-time').forEach(el => el.remove());
   document.querySelectorAll('.result-text').forEach(el => el.remove());
@@ -217,11 +264,19 @@ function resetRace() {
 
     const carEl = ui.cars[racerId];
     carEl.classList.remove('finish-orientation');
-    carEl.style.top = '30%';
+    carEl.style.top  = '';
+    carEl.style.left = '';
+    const trophyEl = ui.lanes[racerId].querySelector('.trophy');
+    trophyEl.style.left = '';
+    trophyEl.style.top  = '';
     ui.lanes[racerId].classList.remove('is-winner');
 
     renderCarPosition(racerId);
   });
+
+  if (isMobile()) {
+    document.querySelector('.scroll-wrapper').scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
 
 // === 6. EVENT LISTENERS ===
