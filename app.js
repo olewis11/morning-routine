@@ -26,7 +26,7 @@ const ui = {
   tracks: { finn: document.getElementById('finn-track'), bowen: document.getElementById('bowen-track') }
 };
 
-const isMobile = () => window.matchMedia('(max-width: 1024px)').matches;
+const isMobile = () => window.matchMedia('(max-width: 1100px)').matches;
 
 // === 3. AUDIO ENGINE ===
 function initAudio() {
@@ -61,7 +61,7 @@ function renderCarPosition(racerId) {
   const targetPosition = (colWidth * step) + (colWidth / 2) + startOffset;
 
   if (isMobile()) {
-    const topValue = step === 0 ? `calc(${targetPosition}% - 40px)` : `calc(${targetPosition}%)`;
+    const topValue = step === 0 ? `calc(${targetPosition}% - var(--start-nudge, 40px))` : `calc(${targetPosition}%)`;
     ui.cars[racerId].style.top  = topValue;
     ui.cars[racerId].style.left = '40%';
     ui.tracks[racerId].style.height = step === 0 ? '0' : `calc(${targetPosition}%)`;
@@ -114,10 +114,18 @@ function renderTimers() {
   });
 }
 
+// Hide browser chrome (address bar). Must be called from a user gesture.
+function enterFullscreen() {
+  const el = document.documentElement;
+  if (document.fullscreenElement || !el.requestFullscreen) return;
+  el.requestFullscreen().catch(() => {});
+}
+
 // === 5. GAME LOGIC ===
 function handleCountdown() {
   if (state.isRacing || state.firstPlaceAnnounced) return;
   initAudio();
+  enterFullscreen();
 
   ui.startBtn.style.opacity = '0.5';
   ui.startBtn.style.pointerEvents = 'none';

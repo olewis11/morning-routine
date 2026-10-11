@@ -400,7 +400,7 @@ h1 {
 }
 .reset-btn:hover { background: #c0392b; }
 
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
 
   /* === INTERFACE COMPACTING === */
   .grandstand { display: none !important; }
@@ -515,7 +515,7 @@ h1 {
   }
 
   /* Override desktop top/left so cars don't flash to wrong position before JS runs */
-  #finn-car, #bowen-car { top: calc(100% / 12 - 40px); }
+  #finn-car, #bowen-car { top: calc(100% / 12 - var(--start-nudge, 40px)); }
   #finn-car  { left: 40%; }
   #bowen-car { left: 40%; }
 
@@ -617,4 +617,35 @@ h1 {
     right: auto;
     transform: translateX(-50%);
   }
+}
+
+/* Noto image used where the system emoji font lacks the glyph (hair pick, Emoji 15) */
+.emoji-img { height: 1.15em; width: auto; vertical-align: middle; }
+
+/* Tablet / Hearth Display (1080px wide portrait): scale up for viewing from a distance.
+   Kept off phones, whose narrow lane columns can't fit larger text. */
+@media (min-width: 700px) and (max-width: 1100px) {
+  :root { --start-nudge: -50px; } /* start line sits lower so big cars clear the lane names */
+  h1 { font-size: 3.6rem; }
+  header { padding-top: calc(env(safe-area-inset-top) + 14px); padding-bottom: 14px; }
+  .car { font-size: 12rem; }
+  #finn-track, #bowen-track { left: calc(40% + 4.5rem); }
+  /* Lane names sit above the tire tracks (tracks are z-index 15) */
+  .lane-label { z-index: 20; }
+  /* Finished cars: shrink and lift so the 12rem car isn't clipped by the bottom of the screen */
+  .finish-orientation { transform: translate(-50%, calc(-50% - 80px)) scale(0.667) !important; }
+  /* 12 rows must fit in ~1800px of height (with or without the address bar) */
+  .task-box { font-size: 1.5rem; padding: 2px 4px; line-height: 1.1; }
+  .task-emoji { font-size: 2.6rem; line-height: 1.1; margin: 2px 0; }
+  .start-box { font-size: 2rem; min-height: 0; padding: 2px 4px; }
+  .start-box.is-go { font-size: 3rem; }
+  .lane-label { font-size: 3rem; }
+  .lane-timer { font-size: 2.2rem; }
+  .split-time { font-size: 1.8rem; }
+  .result-text { font-size: 3rem; bottom: 80px; }
+  .result-text.loser { font-size: 1.8rem; bottom: 150px; }
+  .reset-btn { font-size: 1rem; padding: 8px 18px; background: transparent; color: rgba(255,255,255,0.55); border: 1px solid rgba(255,255,255,0.3); box-shadow: none; font-weight: 400; }
+  /* Keep Reset out of the track: the last task row sits at the bottom of the screen */
+  .controls { top: 14px; bottom: auto; left: auto; right: 15px; transform: none; }
+  .emoji-img { filter: drop-shadow(0 0 3px rgba(255,255,255,0.7)); }
 }
