@@ -629,11 +629,13 @@ h1 {
   h1 { font-size: 3.6rem; }
   header { padding-top: calc(env(safe-area-inset-top) + 14px); padding-bottom: 14px; }
   .car { font-size: 12rem; }
-  #finn-track, #bowen-track { left: calc(40% + 4.5rem); }
+  #finn-track, #bowen-track { left: calc(40% + 5.8rem); }  /* lines up with the 12rem car's wheels */
   /* Lane names sit above the tire tracks (tracks are z-index 15) */
   .lane-label { z-index: 20; }
   /* Finished cars: shrink and lift so the 12rem car isn't clipped by the bottom of the screen */
   .finish-orientation { transform: translate(-50%, calc(-50% - 80px)) scale(0.667) !important; }
+  /* Winner is shown at 16rem (12rem x 1.333) */
+  .lane.is-winner .car.finish-orientation { transform: translate(-50%, calc(-50% - 80px)) scale(1.333) !important; }
   /* 12 rows must fit in ~1800px of height (with or without the address bar) */
   .task-box { font-size: 1.5rem; padding: 2px 4px; line-height: 1.1; }
   .task-emoji { font-size: 2.6rem; line-height: 1.1; margin: 2px 0; }
